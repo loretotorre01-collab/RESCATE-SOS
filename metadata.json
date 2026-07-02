@@ -1,0 +1,6 @@
+{
+  "name": "S.O.S. Abdomen Feliz",
+  "description": "Tu cápsula digital de alivio digestivo inmediato. Protocolos de respiración, posturas de yoga, automasaje, elixires medicinales y recetas ultra-ligeras para el bienestar de tu abdomen.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

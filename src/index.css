@@ -1,0 +1,44 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Montserrat", sans-serif;
+  
+  --color-primary: #006a62;
+  --color-on-primary: #ffffff;
+  --color-primary-container: #40e0d0;
+  --color-on-primary-container: #006058;
+  --color-surface-container-low: #e9f8e9;
+  --color-surface-container-high: #ddecdd;
+  --color-surface-container-highest: #d8e6d8;
+  --color-surface: #eefdee;
+  --color-on-surface: #121e15;
+  --color-on-surface-variant: #3c4a47;
+  --color-secondary-container: #c6e9e9;
+  --color-on-secondary-container: #4a6a6a;
+}
+
+/* Custom Scrollbar prevention for visual comfort */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Glassmorphism custom classes */
+.glass-card {
+  background: rgba(255, 255, 255, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.text-pill-gradient {
+  background: linear-gradient(135deg, #006a62 0%, #3adccc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
