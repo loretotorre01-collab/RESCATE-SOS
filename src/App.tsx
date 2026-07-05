@@ -11,6 +11,25 @@ import { Tab, DiagnosticData, LogEntry } from './types';
 import { INITIAL_LOGS } from './data';
 import { Heart, User, ClipboardList, Info, HelpCircle, X, RotateCcw, Edit2 } from 'lucide-react';
 
+const getStreakDays = (currentLogs: LogEntry[], currentUserName: string) => {
+  if (currentUserName.toLowerCase() === 'marina') {
+    return currentLogs.length > 0 ? 12 + (currentLogs.length - 3) : 12;
+  }
+  if (currentLogs.length === 0) {
+    return 0;
+  }
+  const uniqueDays = new Set(
+    currentLogs.map(log => {
+      try {
+        return log.date.split('T')[0];
+      } catch (e) {
+        return new Date(log.date).toISOString().split('T')[0];
+      }
+    })
+  );
+  return uniqueDays.size;
+};
+
 export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('inicio');
   const [diagnosticData, setDiagnosticData] = useState<DiagnosticData | null>(null);
@@ -21,27 +40,32 @@ export default function App() {
   const [onboarded, setOnboarded] = useState<boolean>(false);
   const [isRescueActive, setIsRescueActive] = useState<boolean>(false);
 
-  // Load logs and user name from localStorage or initialize
+  // Load logs and user name from localStorage or initialize safely
   useEffect(() => {
-    const saved = localStorage.getItem('sos_abdomen_logs');
-    if (saved) {
-      try {
-        setLogs(JSON.parse(saved));
-      } catch (e) {
-        setLogs(INITIAL_LOGS);
-      }
-    } else {
-      localStorage.setItem('sos_abdomen_logs', JSON.stringify(INITIAL_LOGS));
-      setLogs(INITIAL_LOGS);
-    }
-
     const savedName = localStorage.getItem('sos_abdomen_user_name');
+    const saved = localStorage.getItem('sos_abdomen_logs');
+    
+    let currentName = 'Marina';
     if (savedName) {
+      currentName = savedName;
       setUserName(savedName);
       setOnboarded(true);
     } else {
       setUserName('');
       setOnboarded(false);
+    }
+
+    if (saved) {
+      try {
+        setLogs(JSON.parse(saved));
+      } catch (e) {
+        setLogs(currentName.toLowerCase() === 'marina' ? INITIAL_LOGS : []);
+      }
+    } else {
+      // Only default to INITIAL_LOGS if the user is the demo persona "Marina"
+      const defaultLogs = currentName.toLowerCase() === 'marina' ? INITIAL_LOGS : [];
+      localStorage.setItem('sos_abdomen_logs', JSON.stringify(defaultLogs));
+      setLogs(defaultLogs);
     }
   }, []);
 
@@ -96,10 +120,23 @@ export default function App() {
   };
 
   const handleCompleteOnboarding = (name: string) => {
+    const previousName = localStorage.getItem('sos_abdomen_user_name');
     localStorage.setItem('sos_abdomen_user_name', name);
     setUserName(name);
     setOnboarded(true);
     setIsRescueActive(false);
+
+    // If the name changed to a different person (or was empty and is now not Marina),
+    // we should reset/start fresh logs for the new person.
+    if (!previousName || previousName.toLowerCase() !== name.toLowerCase()) {
+      if (name.toLowerCase() !== 'marina') {
+        localStorage.setItem('sos_abdomen_logs', JSON.stringify([]));
+        setLogs([]);
+      } else {
+        localStorage.setItem('sos_abdomen_logs', JSON.stringify(INITIAL_LOGS));
+        setLogs(INITIAL_LOGS);
+      }
+    }
     setActiveTab('rescate'); // Take them directly to the "Botón de Rescate" screen!
   };
 
@@ -164,12 +201,12 @@ export default function App() {
             <div className="bg-[#e9f8e9] rounded-2xl p-4 border border-primary/10 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center font-display font-bold">
-                  {userName.charAt(0).toUpperCase()}
+                  {userName ? userName.charAt(0).toUpperCase() : 'M'}
                 </div>
                 <div>
-                  <h4 className="font-display font-bold text-sm text-primary">{userName}</h4>
+                  <h4 className="font-display font-bold text-sm text-primary">{userName || 'Usuario'}</h4>
                   <p className="text-[10px] text-on-surface-variant font-semibold">
-                    Racha activa: 12 días de ligereza
+                    Racha activa: {getStreakDays(logs, userName)} {getStreakDays(logs, userName) === 1 ? 'día' : 'días'} de ligereza
                   </p>
                 </div>
               </div>
@@ -177,8 +214,26 @@ export default function App() {
                 onClick={() => {
                   const newName = window.prompt('¿Cómo quieres que te llamemos?', userName);
                   if (newName && newName.trim()) {
-                    localStorage.setItem('sos_abdomen_user_name', newName.trim());
-                    setUserName(newName.trim());
+                    const trimmedNewName = newName.trim();
+                    if (trimmedNewName.toLowerCase() !== userName.toLowerCase()) {
+                      const confirmChange = window.confirm(
+                        `¿Estás cambiando de usuario a ${trimmedNewName}? Si es una persona distinta, se iniciará el historial de progreso a cero para su nuevo perfil.`
+                      );
+                      if (confirmChange) {
+                        localStorage.setItem('sos_abdomen_user_name', trimmedNewName);
+                        setUserName(trimmedNewName);
+                        if (trimmedNewName.toLowerCase() !== 'marina') {
+                          setLogs([]);
+                          localStorage.setItem('sos_abdomen_logs', JSON.stringify([]));
+                        } else {
+                          setLogs(INITIAL_LOGS);
+                          localStorage.setItem('sos_abdomen_logs', JSON.stringify(INITIAL_LOGS));
+                        }
+                      }
+                    } else {
+                      localStorage.setItem('sos_abdomen_user_name', trimmedNewName);
+                      setUserName(trimmedNewName);
+                    }
                   }
                 }}
                 className="p-1 rounded-full hover:bg-primary/10 text-primary transition-colors"

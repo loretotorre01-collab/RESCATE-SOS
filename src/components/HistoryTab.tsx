@@ -19,8 +19,27 @@ export default function HistoryTab({ logs, onClearLogs, userName = 'Marina' }: H
     ? Math.round(logs.reduce((sum, item) => sum + item.relief, 0) / totalRescues)
     : 85;
 
-  // Streak calculation (hardcoded to 12 as mockup base, or dynamic based on logs count)
-  const streakDays = totalRescues > 0 ? 12 + (totalRescues - 3) : 12;
+  // Streak calculation: 12 days for demo user 'Marina', or dynamic unique days for other users
+  const getStreakDays = (currentLogs: LogEntry[], currentUserName: string) => {
+    if (currentUserName.toLowerCase() === 'marina') {
+      return currentLogs.length > 0 ? 12 + (currentLogs.length - 3) : 12;
+    }
+    if (currentLogs.length === 0) {
+      return 0;
+    }
+    const uniqueDays = new Set(
+      currentLogs.map(log => {
+        try {
+          return log.date.split('T')[0];
+        } catch (e) {
+          return new Date(log.date).toISOString().split('T')[0];
+        }
+      })
+    );
+    return uniqueDays.size;
+  };
+
+  const streakDays = getStreakDays(logs, userName);
 
   // Filter shown logs
   const displayedLogs = showAllLogs ? logs : logs.slice(0, 3);
@@ -52,10 +71,16 @@ export default function HistoryTab({ logs, onClearLogs, userName = 'Marina' }: H
             <span className="font-display font-black text-4xl text-pill-gradient">
               {streakDays}
             </span>
-            <span className="font-display font-bold text-lg text-primary">Días</span>
+            <span className="font-display font-bold text-lg text-primary">
+              {streakDays === 1 ? 'Día' : 'Días'}
+            </span>
           </div>
           <p className="text-[11px] text-primary font-bold mt-2 font-sans">
-            ¡Tu mejor marca personal!
+            {streakDays === 0
+              ? '¡Inicia tu racha hoy completando tu primer rescate!'
+              : streakDays === 1
+              ? '¡Tu primer día de ligereza! Sigue así mañana.'
+              : '¡Tu mejor marca personal!'}
           </p>
         </div>
 
