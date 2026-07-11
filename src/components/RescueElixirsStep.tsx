@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Leaf, Sparkles, Sprout, Flame, Timer, ArrowRight } from 'lucide-react';
+import { Leaf, Sparkles, Sprout, Flame, Timer, ArrowRight, X } from 'lucide-react';
 import { ELIXIRS } from '../data';
 
 interface RescueElixirsStepProps {
@@ -11,6 +11,7 @@ export default function RescueElixirsStep({ onNext }: RescueElixirsStepProps) {
   const [elixirTimer, setElixirTimer] = useState<number>(300); // 5 minutes standard
   const [elixirTimerActive, setElixirTimerActive] = useState<boolean>(false);
   const [showElixirModal, setShowElixirModal] = useState<boolean>(false);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const elixirTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -20,7 +21,7 @@ export default function RescueElixirsStep({ onNext }: RescueElixirsStepProps) {
           if (prev <= 1) {
             setElixirTimerActive(false);
             setShowElixirModal(false);
-            alert('¡Elixir infusionado con éxito! Bebe despacio a sorbos templados.');
+            setStatusMessage('¡Elixir infusionado con éxito! Bebe despacio a sorbos templados.');
             if (elixirTimerRef.current) clearInterval(elixirTimerRef.current);
             return 0;
           }
@@ -40,6 +41,7 @@ export default function RescueElixirsStep({ onNext }: RescueElixirsStepProps) {
     setElixirTimer(300); // 5 minutes
     setElixirTimerActive(true);
     setShowElixirModal(true);
+    setStatusMessage(null);
   };
 
   const stopElixirInfusion = () => {
@@ -78,6 +80,21 @@ export default function RescueElixirsStep({ onNext }: RescueElixirsStepProps) {
           Selecciona el elixir herbario natural que mejor se adapte para apaciguar tus espasmos o digestión pesada.
         </p>
       </div>
+
+      {statusMessage && (
+        <div className="bg-[#e9f8e9] border border-primary/20 text-primary p-4 rounded-xl flex items-center justify-between shadow-sm animate-fade-in">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-5 h-5 flex-shrink-0 text-primary" />
+            <p className="text-xs font-semibold">{statusMessage}</p>
+          </div>
+          <button
+            onClick={() => setStatusMessage(null)}
+            className="p-1 rounded-full hover:bg-primary/10 text-primary"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
       {/* Bento-style selection banner image */}
       <div className="relative h-44 rounded-2xl overflow-hidden shadow-sm border border-primary/15">

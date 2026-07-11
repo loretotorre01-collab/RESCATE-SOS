@@ -54,6 +54,8 @@ export default function ResourcesTab({ onStartMassageTimer }: ResourcesTabProps)
     setRelaxSeconds(740); // Reset to 12:20
   };
 
+  const [downloadedResource, setDownloadedResource] = useState<string | null>(null);
+
   const formatTime = (totalSeconds: number) => {
     const mins = Math.floor(totalSeconds / 60);
     const secs = totalSeconds % 60;
@@ -61,7 +63,10 @@ export default function ResourcesTab({ onStartMassageTimer }: ResourcesTabProps)
   };
 
   const handleDownload = (resourceName: string) => {
-    alert(`¡Descarga iniciada! Se está guardando el archivo "${resourceName}" en tu dispositivo.`);
+    setDownloadedResource(resourceName);
+    setTimeout(() => {
+      setDownloadedResource((prev) => (prev === resourceName ? null : prev));
+    }, 4000);
   };
 
   return (
@@ -75,6 +80,23 @@ export default function ResourcesTab({ onStartMassageTimer }: ResourcesTabProps)
           Accede a tu biblioteca exclusiva de herramientas diseñadas para el alivio sistemático y la salud digestiva a largo plazo.
         </p>
       </section>
+
+      {downloadedResource && (
+        <div className="bg-[#e9f8e9] border border-primary/20 text-primary p-4 rounded-xl flex items-center justify-between shadow-sm animate-fade-in">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-5 h-5 flex-shrink-0 text-primary" />
+            <p className="text-xs font-semibold">
+              ¡Descarga iniciada! Se está guardando el archivo "{downloadedResource}" en tu dispositivo.
+            </p>
+          </div>
+          <button
+            onClick={() => setDownloadedResource(null)}
+            className="text-xs font-bold text-primary hover:text-black font-sans px-2"
+          >
+            Cerrar
+          </button>
+        </div>
+      )}
 
       {/* Asymmetric Bento-like Resources layout */}
       <div className="grid grid-cols-1 gap-4">

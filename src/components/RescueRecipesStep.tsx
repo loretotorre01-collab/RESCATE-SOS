@@ -270,10 +270,7 @@ export default function RescueRecipesStep({
             {/* Confirm/submit buttons */}
             <div className="space-y-2.5 pt-4">
               <button
-                onClick={() => {
-                  alert('¡Perfecto! Cocina despacio, mastica bien y disfruta de tu cena de rescate.');
-                  onNavigateHome();
-                }}
+                onClick={onNavigateHome}
                 className="w-full bg-primary text-white py-3.5 rounded-xl font-display font-bold text-sm flex items-center justify-center gap-2 shadow-md active:scale-95 transition-transform"
               >
                 <CheckCircle className="w-4 h-4" />

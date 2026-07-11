@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Timer, Compass, ChevronRight } from 'lucide-react';
+import { Timer, Compass, ChevronRight, Sparkles, X } from 'lucide-react';
 import { DiagnosticData } from '../types';
 import { POSES } from '../data';
 
@@ -15,6 +15,7 @@ export default function RescueYogaStep({ diagnosticData, onNext }: RescueYogaSte
   );
   const [poseTimer, setPoseTimer] = useState<number>(180); // 3 minutes standard
   const [poseTimerActive, setPoseTimerActive] = useState<boolean>(false);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const poseTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -23,7 +24,7 @@ export default function RescueYogaStep({ diagnosticData, onNext }: RescueYogaSte
         setPoseTimer((prev) => {
           if (prev <= 1) {
             setPoseTimerActive(false);
-            alert('¡Postura completada! Esperamos que sientas alivio abdominal.');
+            setStatusMessage('¡Postura completada! Esperamos que sientas alivio abdominal.');
             if (poseTimerRef.current) clearInterval(poseTimerRef.current);
             return 0;
           }
@@ -46,6 +47,7 @@ export default function RescueYogaStep({ diagnosticData, onNext }: RescueYogaSte
   const resetPoseTimer = () => {
     setPoseTimerActive(false);
     setPoseTimer(180);
+    setStatusMessage(null);
   };
 
   const formatTime = (totalSeconds: number) => {
@@ -64,6 +66,21 @@ export default function RescueYogaStep({ diagnosticData, onNext }: RescueYogaSte
           Libera la presión mecánica, los gases atrapados y favorece la digestión con este ejercicio dirigido.
         </p>
       </div>
+
+      {statusMessage && (
+        <div className="bg-[#e9f8e9] border border-primary/20 text-primary p-4 rounded-xl flex items-center justify-between shadow-sm animate-fade-in">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-5 h-5 flex-shrink-0 text-primary" />
+            <p className="text-xs font-semibold">{statusMessage}</p>
+          </div>
+          <button
+            onClick={() => setStatusMessage(null)}
+            className="p-1 rounded-full hover:bg-primary/10 text-primary"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
       {/* Symptom pose togglers */}
       <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">

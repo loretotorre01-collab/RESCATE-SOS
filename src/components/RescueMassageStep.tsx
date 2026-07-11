@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Timer, Compass, ChevronRight, AlertTriangle } from 'lucide-react';
+import { Timer, Compass, ChevronRight, AlertTriangle, Sparkles, X } from 'lucide-react';
 
 interface RescueMassageStepProps {
   onNext: () => void;
@@ -9,6 +9,7 @@ export default function RescueMassageStep({ onNext }: RescueMassageStepProps) {
   const [activeMassageStep, setActiveMassageStep] = useState<number>(1);
   const [massageTimer, setMassageTimer] = useState<number>(180); // 3 minutes standard
   const [massageTimerActive, setMassageTimerActive] = useState<boolean>(false);
+  const [statusMessage, setStatusMessage] = useState<string | null>(null);
   const massageTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -17,7 +18,7 @@ export default function RescueMassageStep({ onNext }: RescueMassageStepProps) {
         setMassageTimer((prev) => {
           if (prev <= 1) {
             setMassageTimerActive(false);
-            alert('¡Sesión de automasaje completada! Siente la ligereza de tu vientre.');
+            setStatusMessage('¡Sesión de automasaje completada! Siente la ligereza de tu vientre.');
             if (massageTimerRef.current) clearInterval(massageTimerRef.current);
             return 0;
           }
@@ -46,6 +47,7 @@ export default function RescueMassageStep({ onNext }: RescueMassageStepProps) {
     setMassageTimerActive(false);
     setMassageTimer(180);
     setActiveMassageStep(1);
+    setStatusMessage(null);
   };
 
   const formatTime = (totalSeconds: number) => {
@@ -64,6 +66,21 @@ export default function RescueMassageStep({ onNext }: RescueMassageStepProps) {
           Sigue el sentido natural de las agujas del reloj para ayudar al tránsito intestinal y desinflamar la pared abdominal.
         </p>
       </div>
+
+      {statusMessage && (
+        <div className="bg-[#e9f8e9] border border-primary/20 text-primary p-4 rounded-xl flex items-center justify-between shadow-sm animate-fade-in">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-5 h-5 flex-shrink-0 text-primary" />
+            <p className="text-xs font-semibold">{statusMessage}</p>
+          </div>
+          <button
+            onClick={() => setStatusMessage(null)}
+            className="p-1 rounded-full hover:bg-primary/10 text-primary"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
       {/* Interactive schematic massage diagram */}
       <div className="glass-card rounded-2xl p-6 border border-primary/10 shadow-sm flex flex-col items-center">
