@@ -8,27 +8,8 @@ import HistoryTab from './components/HistoryTab';
 import ResourcesTab from './components/ResourcesTab';
 import WelcomeScreen from './components/WelcomeScreen';
 import { Tab, DiagnosticData, LogEntry } from './types';
-import { INITIAL_LOGS } from './data';
+import { loadLogsFor, saveLogsFor, logsKeyFor, getStreakDays } from './utils';
 import { Heart, User, ClipboardList, Info, HelpCircle, X, RotateCcw, Edit2 } from 'lucide-react';
-
-const getStreakDays = (currentLogs: LogEntry[], currentUserName: string) => {
-  if (currentUserName.toLowerCase() === 'marina') {
-    return currentLogs.length > 0 ? 12 + (currentLogs.length - 3) : 12;
-  }
-  if (currentLogs.length === 0) {
-    return 0;
-  }
-  const uniqueDays = new Set(
-    currentLogs.map(log => {
-      try {
-        return log.date.split('T')[0];
-      } catch (e) {
-        return new Date(log.date).toISOString().split('T')[0];
-      }
-    })
-  );
-  return uniqueDays.size;
-};
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('inicio');
@@ -36,36 +17,21 @@ export default function App() {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [showEvaluation, setShowEvaluation] = useState<boolean>(false);
   const [showSidebar, setShowSidebar] = useState<boolean>(false);
-  const [userName, setUserName] = useState<string>('Marina');
+  const [userName, setUserName] = useState<string>('');
   const [onboarded, setOnboarded] = useState<boolean>(false);
   const [isRescueActive, setIsRescueActive] = useState<boolean>(false);
 
-  // Load logs and user name from localStorage or initialize safely
+  // Cargar nombre e historial de esa usuaria desde localStorage
   useEffect(() => {
     const savedName = localStorage.getItem('sos_abdomen_user_name');
-    const saved = localStorage.getItem('sos_abdomen_logs');
-    
-    let currentName = 'Marina';
     if (savedName) {
-      currentName = savedName;
       setUserName(savedName);
       setOnboarded(true);
+      setLogs(loadLogsFor(savedName));
     } else {
       setUserName('');
       setOnboarded(false);
-    }
-
-    if (saved) {
-      try {
-        setLogs(JSON.parse(saved));
-      } catch (e) {
-        setLogs(currentName.toLowerCase() === 'marina' ? INITIAL_LOGS : []);
-      }
-    } else {
-      // Only default to INITIAL_LOGS if the user is the demo persona "Marina"
-      const defaultLogs = currentName.toLowerCase() === 'marina' ? INITIAL_LOGS : [];
-      localStorage.setItem('sos_abdomen_logs', JSON.stringify(defaultLogs));
-      setLogs(defaultLogs);
+      setLogs([]);
     }
   }, []);
 
@@ -86,6 +52,14 @@ export default function App() {
     const firstSymptom = diagnosticData?.symptoms[0] || 'Tensión';
     const formattedSymptom = firstSymptom.charAt(0).toUpperCase() + firstSymptom.slice(1);
 
+    // El % de alivio se calcula con los datos reales (antes vs. después),
+    // en lugar del valor fijo que venía del modal. Si el "antes" fuera 0,
+    // usamos el valor del modal como respaldo.
+    const relief =
+      intensityBefore > 0
+        ? Math.max(0, Math.round(((intensityBefore - intensityAfter) / intensityBefore) * 100))
+        : reliefRate;
+
     const newEntry: LogEntry = {
       id: `log-${Date.now()}`,
       date: new Date().toISOString(),
@@ -94,7 +68,7 @@ export default function App() {
       intensityBefore,
       intensityAfter,
       notes: notes || 'Protocolo completado con éxito, sensación de desinflamación y ligereza.',
-      relief: reliefRate,
+      relief,
       dateStr: `Hoy, ${new Date().toLocaleTimeString('es-ES', {
         hour: '2-digit',
         minute: '2-digit',
@@ -103,51 +77,44 @@ export default function App() {
 
     const updated = [newEntry, ...logs];
     setLogs(updated);
-    localStorage.setItem('sos_abdomen_logs', JSON.stringify(updated));
+    saveLogsFor(userName, updated);
     setShowEvaluation(false);
     setIsRescueActive(false);
     setActiveTab('progreso');
   };
 
   const handleClearLogs = () => {
-    const confirm = window.confirm(
+    const confirmed = window.confirm(
       '¿Estás segura de que quieres borrar el historial de progreso? Esta acción no se puede deshacer.'
     );
-    if (confirm) {
-      localStorage.removeItem('sos_abdomen_logs');
+    if (confirmed) {
+      localStorage.removeItem(logsKeyFor(userName));
       setLogs([]);
     }
   };
 
   const handleCompleteOnboarding = (name: string) => {
-    const previousName = localStorage.getItem('sos_abdomen_user_name');
-    localStorage.setItem('sos_abdomen_user_name', name);
-    setUserName(name);
+    const trimmed = name.trim();
+    localStorage.setItem('sos_abdomen_user_name', trimmed);
+    setUserName(trimmed);
     setOnboarded(true);
     setIsRescueActive(false);
 
-    // If the name changed to a different person (or was empty and is now not Marina),
-    // we should reset/start fresh logs for the new person.
-    if (!previousName || previousName.toLowerCase() !== name.toLowerCase()) {
-      if (name.toLowerCase() !== 'marina') {
-        localStorage.setItem('sos_abdomen_logs', JSON.stringify([]));
-        setLogs([]);
-      } else {
-        localStorage.setItem('sos_abdomen_logs', JSON.stringify(INITIAL_LOGS));
-        setLogs(INITIAL_LOGS);
-      }
-    }
-    setActiveTab('rescate'); // Take them directly to the "Botón de Rescate" screen!
+    // Cada nombre tiene su propio historial guardado: si es una persona
+    // nueva empieza de cero; si vuelve alguien anterior, recupera el suyo.
+    setLogs(loadLogsFor(trimmed));
+    setActiveTab('rescate');
   };
 
   const handleResetAppData = () => {
-    const confirm = window.confirm(
-      '¿Deseas restaurar la aplicación con los valores por defecto del protocolo?'
+    const confirmed = window.confirm(
+      '¿Quieres cerrar este perfil y volver a la pantalla de inicio? ' +
+      'Tu historial quedará guardado y se recuperará al volver a escribir el mismo nombre.'
     );
-    if (confirm) {
-      localStorage.setItem('sos_abdomen_logs', JSON.stringify(INITIAL_LOGS));
+    if (confirmed) {
+      // No borramos el historial: queda guardado bajo el nombre de la usuaria.
       localStorage.removeItem('sos_abdomen_user_name');
-      setLogs(INITIAL_LOGS);
+      setLogs([]);
       setDiagnosticData(null);
       setUserName('');
       setOnboarded(false);
@@ -201,40 +168,22 @@ export default function App() {
             <div className="bg-[#e9f8e9] rounded-2xl p-4 border border-primary/10 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center font-display font-bold">
-                  {userName ? userName.charAt(0).toUpperCase() : 'M'}
+                  {userName ? userName.charAt(0).toUpperCase() : '?'}
                 </div>
                 <div>
                   <h4 className="font-display font-bold text-sm text-primary">{userName || 'Usuario'}</h4>
                   <p className="text-[10px] text-on-surface-variant font-semibold">
-                    Racha activa: {getStreakDays(logs, userName)} {getStreakDays(logs, userName) === 1 ? 'día' : 'días'} de ligereza
+                    Racha activa: {getStreakDays(logs)} {getStreakDays(logs) === 1 ? 'día' : 'días'} de ligereza
                   </p>
                 </div>
               </div>
+              {/* El lápiz lleva al formulario de nombre de la pestaña Inicio.
+                  Antes usaba window.prompt(), que Google Sites puede bloquear. */}
               <button
                 onClick={() => {
-                  const newName = window.prompt('¿Cómo quieres que te llamemos?', userName);
-                  if (newName && newName.trim()) {
-                    const trimmedNewName = newName.trim();
-                    if (trimmedNewName.toLowerCase() !== userName.toLowerCase()) {
-                      const confirmChange = window.confirm(
-                        `¿Estás cambiando de usuario a ${trimmedNewName}? Si es una persona distinta, se iniciará el historial de progreso a cero para su nuevo perfil.`
-                      );
-                      if (confirmChange) {
-                        localStorage.setItem('sos_abdomen_user_name', trimmedNewName);
-                        setUserName(trimmedNewName);
-                        if (trimmedNewName.toLowerCase() !== 'marina') {
-                          setLogs([]);
-                          localStorage.setItem('sos_abdomen_logs', JSON.stringify([]));
-                        } else {
-                          setLogs(INITIAL_LOGS);
-                          localStorage.setItem('sos_abdomen_logs', JSON.stringify(INITIAL_LOGS));
-                        }
-                      }
-                    } else {
-                      localStorage.setItem('sos_abdomen_user_name', trimmedNewName);
-                      setUserName(trimmedNewName);
-                    }
-                  }
+                  setActiveTab('inicio');
+                  setShowEvaluation(false);
+                  setShowSidebar(false);
                 }}
                 className="p-1 rounded-full hover:bg-primary/10 text-primary transition-colors"
                 title="Editar nombre"
@@ -308,7 +257,7 @@ export default function App() {
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-semibold hover:bg-surface-container-low transition-colors text-left"
               >
                 <HelpCircle className="w-4 h-4 text-primary" />
-                <span>Recursos e Infusiones</span>
+                <span>Rutina Nocturna</span>
               </button>
             </div>
 
@@ -319,7 +268,7 @@ export default function App() {
                 className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-on-surface-variant hover:text-primary hover:bg-surface-container-low transition-all text-left"
               >
                 <RotateCcw className="w-4 h-4" />
-                <span>Restaurar Protocolo</span>
+                <span>Cambiar de Perfil</span>
               </button>
             </div>
           </div>
@@ -366,7 +315,7 @@ export default function App() {
                 onNavigateHome={() => {
                   setActiveTab('rescate');
                 }}
-                initialStep={3} // Switch directly to step 3 (automasaje)
+                initialStep={3} // Ir directamente al paso 3 (automasaje)
               />
             )}
 
@@ -383,7 +332,7 @@ export default function App() {
       <BottomNav activeTab={activeTab} onTabChange={(tab) => {
         setActiveTab(tab);
         setShowEvaluation(false);
-        // If they click on "Rescate" bottom tab, make sure they go to the questionnaire screen
+        // Al pulsar "Rescate" en la barra inferior, ir siempre al cuestionario
         if (tab === 'rescate') {
           setIsRescueActive(false);
         }

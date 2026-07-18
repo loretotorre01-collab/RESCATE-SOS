@@ -30,7 +30,7 @@ export default function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
     },
     {
       id: 'bonos' as Tab,
-      label: 'Bonos',
+      label: 'Rutina',
       icon: BookOpen,
     },
   ];

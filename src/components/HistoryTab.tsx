@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Sparkles, Calendar, TrendingUp, Heart, Trash2, ArrowUpRight } from 'lucide-react';
 import { LogEntry } from '../types';
+import { getStreakDays } from '../utils';
 
 interface HistoryTabProps {
   logs: LogEntry[];
@@ -8,38 +9,33 @@ interface HistoryTabProps {
   userName?: string;
 }
 
-export default function HistoryTab({ logs, onClearLogs, userName = 'Marina' }: HistoryTabProps) {
+export default function HistoryTab({ logs, onClearLogs, userName = '' }: HistoryTabProps) {
   const [showAllLogs, setShowAllLogs] = useState(false);
 
   // Calculate dynamic stats
   const totalRescues = logs.length;
-  
-  // Average relief based on actual logs
+
+  // Alivio promedio real: sin registros no hay dato que mostrar (antes
+  // enseñaba un 85% inventado que confundía).
   const averageRelief = totalRescues > 0
     ? Math.round(logs.reduce((sum, item) => sum + item.relief, 0) / totalRescues)
-    : 85;
+    : 0;
 
-  // Streak calculation: 12 days for demo user 'Marina', or dynamic unique days for other users
-  const getStreakDays = (currentLogs: LogEntry[], currentUserName: string) => {
-    if (currentUserName.toLowerCase() === 'marina') {
-      return currentLogs.length > 0 ? 12 + (currentLogs.length - 3) : 12;
-    }
-    if (currentLogs.length === 0) {
-      return 0;
-    }
-    const uniqueDays = new Set(
-      currentLogs.map(log => {
-        try {
-          return log.date.split('T')[0];
-        } catch (e) {
-          return new Date(log.date).toISOString().split('T')[0];
-        }
-      })
-    );
-    return uniqueDays.size;
-  };
+  // Etiqueta del anillo acorde al valor real
+  const reliefLabel =
+    totalRescues === 0 ? 'Aún sin datos'
+    : averageRelief >= 60 ? 'Nivel Óptimo'
+    : averageRelief >= 30 ? 'Buen progreso'
+    : 'Sigue practicando';
 
-  const streakDays = getStreakDays(logs, userName);
+  // Rescates de ESTE mes (antes contaba todo el historial)
+  const now = new Date();
+  const monthlyRescues = logs.filter(log => {
+    const d = new Date(log.date);
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  }).length;
+
+  const streakDays = getStreakDays(logs);
 
   // Filter shown logs
   const displayedLogs = showAllLogs ? logs : logs.slice(0, 3);
@@ -80,7 +76,7 @@ export default function HistoryTab({ logs, onClearLogs, userName = 'Marina' }: H
               ? '¡Inicia tu racha hoy completando tu primer rescate!'
               : streakDays === 1
               ? '¡Tu primer día de ligereza! Sigue así mañana.'
-              : '¡Tu mejor marca personal!'}
+              : `¡${streakDays} días cuidando tu abdomen, sigue sumando!`}
           </p>
         </div>
 
@@ -114,12 +110,12 @@ export default function HistoryTab({ logs, onClearLogs, userName = 'Marina' }: H
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <span className="font-display font-extrabold text-base text-primary">
-                {averageRelief}%
+                {totalRescues > 0 ? `${averageRelief}%` : '—'}
               </span>
             </div>
           </div>
           <span className="text-[10px] text-on-secondary-container font-semibold">
-            Nivel Óptimo
+            {reliefLabel}
           </span>
         </div>
 
@@ -130,7 +126,7 @@ export default function HistoryTab({ logs, onClearLogs, userName = 'Marina' }: H
           </span>
           <div className="flex items-center justify-center h-24">
             <div className="bg-[#c6e9e9] text-[#006058] rounded-full w-14 h-14 flex items-center justify-center animate-pulse">
-              <span className="font-display font-black text-xl">{totalRescues}</span>
+              <span className="font-display font-black text-xl">{monthlyRescues}</span>
             </div>
           </div>
           <span className="text-[10px] text-on-secondary-container font-semibold">
@@ -154,12 +150,14 @@ export default function HistoryTab({ logs, onClearLogs, userName = 'Marina' }: H
                 <Trash2 className="w-3.5 h-3.5" /> Limpiar
               </button>
             )}
-            <button
-              onClick={() => setShowAllLogs(!showAllLogs)}
-              className="text-primary hover:underline text-xs font-bold focus:outline-none"
-            >
-              {showAllLogs ? 'Ver menos' : 'Ver todo'}
-            </button>
+            {totalRescues > 3 && (
+              <button
+                onClick={() => setShowAllLogs(!showAllLogs)}
+                className="text-primary hover:underline text-xs font-bold focus:outline-none"
+              >
+                {showAllLogs ? 'Ver menos' : 'Ver todo'}
+              </button>
+            )}
           </div>
         </div>
 
@@ -199,7 +197,7 @@ export default function HistoryTab({ logs, onClearLogs, userName = 'Marina' }: H
             <div className="text-center py-8 glass-card rounded-xl border-dashed border border-outline-variant/50">
               <Calendar className="w-8 h-8 text-outline-variant mx-auto mb-2" />
               <p className="text-on-surface-variant text-xs font-medium">
-                No hay registros guardados.
+                No hay registros guardados. Completa tu primer rescate para empezar.
               </p>
             </div>
           )}
@@ -208,18 +206,19 @@ export default function HistoryTab({ logs, onClearLogs, userName = 'Marina' }: H
 
       {/* Motivational Bottom Banner */}
       <section className="pt-2">
-        <div className="relative rounded-2xl overflow-hidden h-36 flex items-center p-6 shadow-sm">
+        <div className="relative rounded-2xl overflow-hidden h-36 flex items-center p-6 shadow-sm bg-[#e9f8e9]">
           <div className="absolute inset-0 z-0">
             <img
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuD__uRphv2WmGMmAQDo7YRXZuqtL6FXeV28aZbiK6b9cQVCb27LFWyKeXLGLYOZ1VPyeLAX_ssrd9SIY1sIEKxt4azevUAFwXhiavRn0orSogQ6eEcKoKAV37VgrnzJWxRXrELdsRVmOQW2jZlHdtkRXPnq2uF7gMlYBjd9MGJT4e1qzIOfjQpYVBgMh3qn9vUhCqGytgLuYjCUoC0j2PXClmsG54aA2xsZkfsXG7mSRt-UIO2pZtHK8IvFPT24fd7CLx82mwjT_sQ"
-              alt={`Fondo zen de ${userName}`}
+              alt="Fondo relajante"
               className="w-full h-full object-cover opacity-25"
+              onError={(e) => { e.currentTarget.style.display = 'none'; }}
             />
             <div className="absolute inset-0 bg-gradient-to-r from-primary/30 to-transparent" />
           </div>
           <div className="relative z-10">
             <h4 className="font-display font-bold text-lg text-primary mb-1">
-              ¡Sigue así, {userName}!
+              ¡Sigue así{userName ? `, ${userName}` : ''}!
             </h4>
             <p className="text-on-surface-variant text-xs leading-relaxed max-w-[200px] font-medium">
               Tu constancia diaria está transformando tu digestión y devolviéndole calma a tu cuerpo.

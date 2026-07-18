@@ -105,7 +105,7 @@ export default function WelcomeScreen({ onComplete, initialName = '', isTab = fa
               <div>
                 <h4 className="font-sans font-bold text-xs text-on-surface">Recursos de Bienestar y Hábitos</h4>
                 <p className="text-on-surface-variant text-[11px] leading-relaxed mt-0.5">
-                  Catálogo de infusiones calmantes, manuales de salud digestiva, y racha de ligereza para monitorizar tu éxito.
+                  Rutina Nocturna Guiada y racha de ligereza para monitorizar tu éxito.
                 </p>
               </div>
             </div>

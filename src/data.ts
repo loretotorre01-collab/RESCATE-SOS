@@ -1,4 +1,4 @@
-import { Pose, Elixir, Recipe, Resource, LogEntry } from './types';
+import { Pose, Elixir, Recipe, LogEntry } from './types';
 
 export const POSES: Record<string, Pose> = {
   gases: {
@@ -189,27 +189,6 @@ export const RECIPES = {
     ]
   }
 };
-
-export const RESOURCES: Resource[] = [
-  {
-    id: 'manual',
-    title: 'Manual de Bienestar Abdominal',
-    type: 'PDF • 15 pág',
-    info: 'Guía paso a paso sobre anatomía digestiva y automasaje restaurativo.',
-    icon: 'BookOpen',
-    linkText: 'Ver Recurso',
-    tags: ['Anatomía', 'Masajes']
-  },
-  {
-    id: 'protocol',
-    title: 'Protocolo de Intervención Integral',
-    type: 'Documento Clínico',
-    info: 'Metodología clínica de 3 fases para el alivio recurrente.',
-    icon: 'ClipboardList',
-    linkText: 'Descargar Protocolo',
-    tags: ['Clínica', 'Fases']
-  }
-];
 
 export const INITIAL_LOGS: LogEntry[] = [
   {
