@@ -39,9 +39,8 @@ export const POSES: Record<string, Pose> = {
     name: 'Balasana',
     subtitle: '"Postura del Niño"',
     target: 'Pesadez',
-    // La URL anterior apuntaba a un dominio distinto y no cargaba.
-    // Sustituir por una foto real de Balasana cuando la tengas.
-    image: imagePlaceholder('🧘', '#d8f3ec', '#a8dcd4'),
+    // Imagen real de Balasana agregada según la petición del usuario.
+    image: '/src/assets/images/yoga_balasana_1784499305945.jpg',
     benefit: 'Calma el sistema nervioso y masajea suavemente los órganos digestivos por compresión.',
     steps: [
       'Arrodíllate en el suelo, siéntate sobre tus talones.',

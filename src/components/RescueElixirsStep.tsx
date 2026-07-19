@@ -101,6 +101,7 @@ export default function RescueElixirsStep({ onNext }: RescueElixirsStepProps) {
         <img
           src="https://lh3.googleusercontent.com/aida-public/AB6AXuAaOg5O_KR0xzHKy3Dtf1ZXvaoP1YacZQYNYFMVZb1cr6J4ySpaKn6bb9Jvn1dws3MFdK0LVl7vIp9NAv2KLTx84oShBo7ahZV93bmLOnpQu5rJC21p9YbtVh2xdfgVbgaZ9NKDugSi-pI1w5BPHwLpgBa2upC5Wndlpn8H2F6IeCbyP__LMjbhVITWjohYlrDgzQMcfA3oCFmkr5Dm5w5Gl_VeNCfJcRd5UI6kWxY8ZvEjZZgf0sOpbVTkTTfVl-qnDZ_iaUo8L9o"
           alt="Hojas de infusión de menta"
+          referrerPolicy="no-referrer"
           className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />

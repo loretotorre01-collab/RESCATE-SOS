@@ -111,6 +111,7 @@ export default function RescueYogaStep({ diagnosticData, onNext }: RescueYogaSte
           <img
             src={POSES[activePoseKey].image}
             alt={POSES[activePoseKey].name}
+            referrerPolicy="no-referrer"
             className="w-full h-full object-cover transition-all duration-500"
           />
           <div className="absolute bottom-4 left-4 bg-primary/90 text-white px-3 py-1 rounded-full text-xs font-sans font-bold">

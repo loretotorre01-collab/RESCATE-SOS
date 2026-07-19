@@ -211,6 +211,7 @@ export default function HistoryTab({ logs, onClearLogs, userName = '' }: History
             <img
               src="https://lh3.googleusercontent.com/aida-public/AB6AXuD__uRphv2WmGMmAQDo7YRXZuqtL6FXeV28aZbiK6b9cQVCb27LFWyKeXLGLYOZ1VPyeLAX_ssrd9SIY1sIEKxt4azevUAFwXhiavRn0orSogQ6eEcKoKAV37VgrnzJWxRXrELdsRVmOQW2jZlHdtkRXPnq2uF7gMlYBjd9MGJT4e1qzIOfjQpYVBgMh3qn9vUhCqGytgLuYjCUoC0j2PXClmsG54aA2xsZkfsXG7mSRt-UIO2pZtHK8IvFPT24fd7CLx82mwjT_sQ"
               alt="Fondo relajante"
+              referrerPolicy="no-referrer"
               className="w-full h-full object-cover opacity-25"
               onError={(e) => { e.currentTarget.style.display = 'none'; }}
             />

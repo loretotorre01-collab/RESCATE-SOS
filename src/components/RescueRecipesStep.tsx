@@ -193,6 +193,7 @@ export default function RescueRecipesStep({
             <img
               src={activeRecipe.image}
               alt={activeRecipe.title}
+              referrerPolicy="no-referrer"
               className="w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
