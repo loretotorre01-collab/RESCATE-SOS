@@ -1,4 +1,24 @@
-import { Pose, Elixir, Recipe, LogEntry } from './types';
+import { Pose, Elixir, Recipe, Resource } from './types';
+
+// ---------------------------------------------------------------------------
+// Imágenes de respaldo generadas en el propio código (SVG en data-URI).
+// Nunca fallan (no dependen de internet) y usan la paleta de la app.
+// Cuando tengas fotos reales, sustituye el valor de `image` por su URL.
+// ---------------------------------------------------------------------------
+const imagePlaceholder = (emoji: string, colorA: string, colorB: string) =>
+  'data:image/svg+xml;utf8,' +
+  encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="800" height="450" viewBox="0 0 800 450">` +
+      `<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">` +
+      `<stop offset="0" stop-color="${colorA}"/><stop offset="1" stop-color="${colorB}"/>` +
+      `</linearGradient></defs>` +
+      `<rect width="800" height="450" fill="url(#g)"/>` +
+      `<text x="400" y="250" font-size="150" text-anchor="middle" dominant-baseline="middle">${emoji}</text>` +
+    `</svg>`
+  );
+
+// Exportada para poder usarla como onError en los componentes de recetas
+export const RECIPE_FALLBACK_IMAGE = imagePlaceholder('🍲', '#e9f8e9', '#c6e9e9');
 
 export const POSES: Record<string, Pose> = {
   gases: {
@@ -19,7 +39,9 @@ export const POSES: Record<string, Pose> = {
     name: 'Balasana',
     subtitle: '"Postura del Niño"',
     target: 'Pesadez',
-    image: 'https://lh3.googleusercontent.com/aida/AP1WRLuJ0lPCjL4HkIpOpWGr6g2zNaKoRTLPxRBdz6QAWX-WlR_Tr2WjjNhoGBfPpPDZa5Qwjq3TSlII2TIhrPITytDkKt9JlZVSOwUeE1df6g4VAv0tPgqZjKlK4seAzYG2_9IUqfArWUqZCE94LVkmCV-EIxSvq9j9-JsYH-7vh4xvVYgqQbatOIMPvH-Da6ydbe-LtXIQycNBC5DwSbTk_kEpDtj-7kbrAdLJCf1BGjX_9qG28U3t8_-gmw',
+    // La URL anterior apuntaba a un dominio distinto y no cargaba.
+    // Sustituir por una foto real de Balasana cuando la tengas.
+    image: imagePlaceholder('🧘', '#d8f3ec', '#a8dcd4'),
     benefit: 'Calma el sistema nervioso y masajea suavemente los órganos digestivos por compresión.',
     steps: [
       'Arrodíllate en el suelo, siéntate sobre tus talones.',
@@ -91,7 +113,7 @@ export const RECIPES = {
     id: 'pollo_arroz_zanahoria',
     title: 'Arroz de Rescate con Pollo y Zanahoria',
     description: 'Una opción equilibrada de alta tolerancia con proteína magra y vegetales cocidos que protegen tu estómago.',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCHX1k7y2w_NAnS-Zz9rGjW0zUqQn0S-L4u8d8d7qR_w_x_z_y_x_w_v_u_t_s_r_q_p_o_n_m_l_k_j_i_h_g_f_e_d_c_b_a',
+    image: imagePlaceholder('🍗', '#f3f0e0', '#dcd4a8'),
     protein: { label: 'Pollo Magro', icon: 'Egg' },
     ingredients: [
       '150g de pechuga de pollo (limpia, sin piel ni grasa)',
@@ -112,7 +134,7 @@ export const RECIPES = {
     id: 'pescado_patata_calabaza',
     title: 'Merluza al Vapor sobre Puré de Patata y Calabaza',
     description: 'Proteína marina de máxima asimilación con un puré reconfortante y rico en mucílagos que calman la mucosa.',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuA-3o_hS2Z-vE_Xp4rWqU_u_v_w_x_y_z_0_1_2_3_4_5_6_7_8_9_A_B_C_D_E_F',
+    image: imagePlaceholder('🐟', '#dcedf3', '#a8c8dc'),
     protein: { label: 'Pescado Blanco', icon: 'Fish' },
     ingredients: [
       '150g de filete de pescado blanco limpio (merluza, lenguado o bacalao fresco)',
@@ -133,7 +155,7 @@ export const RECIPES = {
     id: 'arroz_zanahoria_patata',
     title: 'Sopa Crema de Arroz con Zanahoria y Patata',
     description: 'La opción clásica más blanda y astringente para combatir la acidez, el reflujo y la irritación intestinal.',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC_5rT9_q_p_o_n_m_l_k_j_i_h_g_f_e_d_c_b_a_0_9_8_7_6_5_4_3_2_1',
+    image: imagePlaceholder('🥣', '#f3ece0', '#dcc8a8'),
     ingredients: [
       '80g de arroz blanco redondo',
       '1 patata pequeña (aprox. 100g), pelada y cortada en cubitos muy pequeños',
@@ -144,7 +166,7 @@ export const RECIPES = {
     ],
     steps: [
       { title: '1. Preparar el Caldo Base', text: 'En una olla pequeña, vierte los 700ml de agua purificada con la patata picada (al estar fina soltará más almidón espesante) y la zanahoria finamente rallada. Añade la pizca de sal y lleva a ebullición rápida a fuego medio.' },
-      { title: '2. Cocción del Arroz', text: 'Cuando rompa a hervir, añade los 80g de arroz blanco de grano redondo. Cocina a fuego medio-bajo durante 20 minutos removiendo de vez en cuando. La clave es que el grano se abra del todo para liberar los almidones suavizantes.' },
+      { title: '2. Cocinar el Arroz', text: 'Cuando rompa a hervir, añade los 80g de arroz blanco de grano redondo. Cocina a fuego medio-bajo durante 20 minutos removiendo de vez en cuando. La clave es que el grano se abra del todo para liberar los almidones suavizantes.' },
       { title: '3. Textura Melosa Estomacal', text: 'Una vez transcurrido el tiempo, asegúrate de que quede una consistencia caldosa y muy suave (si ves que se seca, añade 50ml adicionales de agua templada). La textura debe asemejarse a una avena ligera.' },
       { title: '4. Servir a Temperatura Corporal', text: 'Vierte en un plato hondo, riega con la cucharadita de aceite de oliva virgen extra en crudo y mezcla bien. Deja entibiar hasta temperatura ambiente antes de ingerir lentamente.' }
     ]
@@ -152,7 +174,7 @@ export const RECIPES = {
   calabaza_zanahoria_patata: {
     id: 'calabaza_zanahoria_patata',
     title: 'Crema de Tres Verduras de Rescate (100% Vegetal)',
-    description: 'Una deliciosa opción puramente vegetal repleta de betacarotenos y almidones reparadores para desinflamar las mucosas del colon.',
+    description: 'Una de las opciones puramente vegetales preferidas para calmar las mucosas gástricas e intestinales.',
     image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC4rtc_WY3I-ShmCgj5m47FXkTd07rSg7IM2m4o_rDyTv_sBBXcGmZglbNy52jKU0k8PAxHT-10I77wYkyV4sDDUCrtsBTmYqFsgb5zY_4Hfxttx8_jBVEzlo9Mtb1-vpvtev76ySQHZrcPU2jDELZDRLKDlMn5kWk8Hc9NVX5cmpSqSzQa2RMO8vMasQ1oIjoOyTeHr6HC90Om7Up7z1KZq7t3flU8pg2MGjp88nJA-quNPQigkX_EmZ7516zeLVNJbbNRF5ko_0Y',
     ingredients: [
       '200g de calabaza dulce de temporada, pelada y troceada',
@@ -174,7 +196,7 @@ export const RECIPES = {
     id: 'fallback',
     title: 'Cena Suave Personalizada de Rescate',
     description: 'Una combinación reparadora y libre de irritantes adaptada exclusivamente con tus ingredientes de despensa.',
-    image: 'https://lh3.googleusercontent.com/aida-public/AB6AXuC_food_generic_placeholder',
+    image: RECIPE_FALLBACK_IMAGE,
     ingredients: [
       'Tus ingredientes seleccionados de despensa (Bases, Vegetales o Proteínas)',
       '1 cucharadita de aceite de oliva virgen extra (añadido al final)',
@@ -190,38 +212,23 @@ export const RECIPES = {
   }
 };
 
-export const INITIAL_LOGS: LogEntry[] = [
+export const RESOURCES: Resource[] = [
   {
-    id: 'log-1',
-    date: '2026-06-29T20:30:00.000Z',
-    type: 'Masaje de Activación',
-    label: 'Masaje Intestinal',
-    intensityBefore: 7,
-    intensityAfter: 3,
-    notes: 'Gran alivio, expulsión de gases y menor distensión después de terminar el ciclo.',
-    relief: 45,
-    dateStr: 'Ayer, 08:30 PM • Inflamación Media'
+    id: 'manual',
+    title: 'Manual de Bienestar Abdominal',
+    type: 'PDF • 15 pág',
+    info: 'Guía paso a paso sobre anatomía digestiva y automasaje restaurativo.',
+    icon: 'BookOpen',
+    linkText: 'Ver Recurso',
+    tags: ['Anatomía', 'Masajes']
   },
   {
-    id: 'log-2',
-    date: '2026-06-25T14:15:00.000Z',
-    type: 'Rescate Intensivo',
-    label: 'Protocolo Completo',
-    intensityBefore: 9,
-    intensityAfter: 2,
-    notes: 'Dolor y pesadez muy elevados por comida copiosa rápida. El elixir de jengibre obró milagros.',
-    relief: 72,
-    dateStr: '15 Oct • Pesadez Extrema'
-  },
-  {
-    id: 'log-3',
-    date: '2026-06-24T18:00:00.000Z',
-    type: 'Postura de Alivio',
-    label: 'Postura Apanasana',
-    intensityBefore: 6,
-    intensityAfter: 4,
-    notes: 'Molestias por acumulación de gases. Apanasana liberó gran parte de la tensión.',
-    relief: 30,
-    dateStr: '14 Oct • Gas y Tensión'
+    id: 'protocol',
+    title: 'Protocolo de Intervención Integral',
+    type: 'Documento Clínico',
+    info: 'Metodología clínica de 3 fases para el alivio recurrente.',
+    icon: 'ClipboardList',
+    linkText: 'Descargar Protocolo',
+    tags: ['Clínica', 'Fases']
   }
 ];
